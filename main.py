@@ -1,20 +1,23 @@
-from google.cloud import bigquery
 import functions_framework
+from google.cloud import bigquery
 
 
 @functions_framework.http
 def main(request):
     client = bigquery.Client()
-    query = f"""
-                SELECT * except (payload, deleted, deleted_at, deleted_reviewed)
+    query = """
+                SELECT * except
+                (payload, deleted, deleted_at, deleted_reviewed)
                 FROM mlb_alphabet_game.tweetable_plays
                 where deleted = false
                 order by completed_at desc limit 50
             """
     results = client.query(query).result()
-    # TODO: Break Record into tuple of dicts
-    resp = [dict(r.items()) for r in results]
-    return resp, 200, {"Content-Type": "application/json"}
+    return (
+        {"data": [dict(r.items()) for r in results]},
+        200,
+        {"Content-Type": "application/json"},
+    )
 
 
 # print(main(None))
