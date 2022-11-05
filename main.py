@@ -12,4 +12,8 @@ def main(request):
                 order by completed_at desc limit 50
             """
     results = client.query(query).result()
-    return list(results)
+    # TODO: Break Record into tuple of dicts
+    return tuple([dict(r.items()) for r in results])
+
+
+print(main(None))
