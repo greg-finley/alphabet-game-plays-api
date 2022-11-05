@@ -8,7 +8,9 @@ def main(request):
     query = """
                 SELECT * except
                 (payload, deleted, deleted_at, deleted_reviewed, completed_at),
-                unix_seconds(completed_at) completed_at
+                unix_seconds(completed_at) completed_at,
+                case when tweet_text like '%is still%' then false else true
+                end as letter_match
                 FROM mlb_alphabet_game.tweetable_plays
                 where deleted = false
                 order by completed_at desc limit 50
@@ -21,4 +23,4 @@ def main(request):
     )
 
 
-# print(main(None))
+print(main(None))
