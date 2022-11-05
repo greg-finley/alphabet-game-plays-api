@@ -3,7 +3,7 @@ import functions_framework
 
 
 @functions_framework.http
-def main():
+def main(request):
     client = bigquery.Client()
     query = f"""
                 SELECT * except (payload, deleted, deleted_at, deleted_reviewed)
