@@ -24,7 +24,7 @@ jobs:
         name: 'projects/greg-finley/locations/us-central1/functions/alphabet-game-plays-api'
         runtime: 'python310'
         entry_point: 'main'
-        memory_mb: 128
+        memory_mb: 256
         timeout: 10
         min_instances: 0
         max_instances: 100
