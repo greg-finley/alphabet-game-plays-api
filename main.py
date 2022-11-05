@@ -14,6 +14,3 @@ def main(request):
     results = client.query(query).result()
     # TODO: Break Record into tuple of dicts
     return tuple([dict(r.items()) for r in results])
-
-
-print(main(None))
