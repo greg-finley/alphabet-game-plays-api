@@ -13,4 +13,8 @@ def main(request):
             """
     results = client.query(query).result()
     # TODO: Break Record into tuple of dicts
-    return tuple([dict(r.items()) for r in results])
+    resp = [dict(r.items()) for r in results]
+    return resp, 200, {"Content-Type": "application/json"}
+
+
+# print(main(None))
