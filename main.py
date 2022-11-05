@@ -1,7 +1,9 @@
 from google.cloud import bigquery
+import functions_framework
 
 
-def main(event, context):
+@functions_framework.http
+def main():
     client = bigquery.Client()
     query = f"""
                 SELECT * except (payload, deleted, deleted_at, deleted_reviewed)
@@ -11,6 +13,3 @@ def main(event, context):
             """
     results = client.query(query).result()
     return list(results)
-
-
-# main(None, None)

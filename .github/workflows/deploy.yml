@@ -27,5 +27,5 @@ jobs:
         memory_mb: 128
         timeout: 10
         min_instances: 0
-        max_instances: 10
+        max_instances: 100
 
