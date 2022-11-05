@@ -7,7 +7,8 @@ def main(request):
     client = bigquery.Client()
     query = """
                 SELECT * except
-                (payload, deleted, deleted_at, deleted_reviewed)
+                (payload, deleted, deleted_at, deleted_reviewed, completed_at),
+                unix_seconds(completed_at) completed_at
                 FROM mlb_alphabet_game.tweetable_plays
                 where deleted = false
                 order by completed_at desc limit 50
