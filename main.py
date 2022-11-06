@@ -19,6 +19,18 @@ def main(request):
     else:
         sport = ""
 
+    before_ts = request.args.get("before_ts")
+    if before_ts:
+        if not before_ts.isdigit():
+            return (
+                {"error": "Invalid before_ts. Must be an integer timestamp."},
+                400,
+                {"Content-Type": "application/json"},
+            )
+        before_ts = f" AND unix_seconds(completed_at) < {before_ts}"
+    else:
+        before_ts = ""
+
     client = bigquery.Client()
     query = f"""
                 SELECT * except
@@ -27,7 +39,7 @@ def main(request):
                 case when tweet_text like '%is still%' then false else true
                 end as letter_match
                 FROM mlb_alphabet_game.tweetable_plays
-                where deleted = false {sport}
+                where deleted = false {sport} {before_ts}
                 order by completed_at desc limit {limit}
             """
     results = client.query(query).result()
