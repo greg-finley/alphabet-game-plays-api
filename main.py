@@ -54,7 +54,7 @@ def main(request):
                 unix_seconds(completed_at) completed_at
                 from
                 (select *,  case when tweet_text like '%is still%' then false else true
-                end as letter_match from 
+                end as letter_match
                 FROM mlb_alphabet_game.tweetable_plays)
                 where deleted = false {sport} {before_ts} {matches_only}
                 order by completed_at desc limit {limit}
