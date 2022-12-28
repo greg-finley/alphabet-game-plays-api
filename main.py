@@ -15,7 +15,7 @@ def main(request):
             {"Content-Type": "application/json"},
         )
     if matches_only == "true":
-        matches_only = "AND NOT tweet_text like '%is still%'"
+        matches_only = "AND letter_match = true"
     else:
         matches_only = ""
 
@@ -51,10 +51,11 @@ def main(request):
      from (
                 SELECT * except
                 (payload, deleted, deleted_at, deleted_reviewed, completed_at),
-                unix_seconds(completed_at) completed_at,
-                case when tweet_text like '%is still%' then false else true
-                end as letter_match
-                FROM mlb_alphabet_game.tweetable_plays
+                unix_seconds(completed_at) completed_at
+                from
+                (select *,  case when tweet_text like '%is still%' then false else true
+                end as letter_match from 
+                FROM mlb_alphabet_game.tweetable_plays)
                 where deleted = false {sport} {before_ts} {matches_only}
                 order by completed_at desc limit {limit}
             )
