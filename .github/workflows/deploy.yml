@@ -22,7 +22,7 @@ jobs:
       uses: 'google-github-actions/deploy-cloud-functions@v0'
       with:
         name: 'projects/greg-finley/locations/us-central1/functions/alphabet-game-plays-api'
-        runtime: 'python311'
+        runtime: 'python310'
         entry_point: 'main'
         memory_mb: 256
         timeout: 10
