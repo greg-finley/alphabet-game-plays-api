@@ -15,7 +15,7 @@ def main(request):
             {"Content-Type": "application/json"},
         )
     if matches_only == "true":
-        matches_only = "WHERE letter_match = true"
+        matches_only = "AND NOT tweet_text like '%is still%'"
     else:
         matches_only = ""
 
@@ -55,10 +55,9 @@ def main(request):
                 case when tweet_text like '%is still%' then false else true
                 end as letter_match
                 FROM mlb_alphabet_game.tweetable_plays
-                where deleted = false {sport} {before_ts}
+                where deleted = false {sport} {before_ts} {matches_only}
                 order by completed_at desc limit {limit}
             )
-            {matches_only}
             """
     results = client.query(query).result()
     return (
