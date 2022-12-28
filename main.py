@@ -7,6 +7,18 @@ def main(request):
     limit = request.args.get("limit", 50)
     limit = min(1000, int(limit))
 
+    matches_only = request.args.get("matches_only", "false")
+    if matches_only not in ["true", "false"]:
+        return (
+            {"error": "Invalid matches_only. Must be true or false."},
+            400,
+            {"Content-Type": "application/json"},
+        )
+    if matches_only == "true":
+        matches_only = "WHERE letter_match = true"
+    else:
+        matches_only = ""
+
     sport = request.args.get("sport")
     if sport and sport not in ["NBA", "MLB", "NFL", "NHL"]:
         return (
@@ -33,6 +45,10 @@ def main(request):
 
     client = bigquery.Client()
     query = f"""
+     SELECT *, case when letter_match = true then 
+     regexp_extract_all(regexp_extract(tweet_text, 'name[^.]*.'), "[A-Z]")
+     else null end as matching_letters
+     from (
                 SELECT * except
                 (payload, deleted, deleted_at, deleted_reviewed, completed_at),
                 unix_seconds(completed_at) completed_at,
@@ -41,6 +57,8 @@ def main(request):
                 FROM mlb_alphabet_game.tweetable_plays
                 where deleted = false {sport} {before_ts}
                 order by completed_at desc limit {limit}
+            )
+            {matches_only}
             """
     results = client.query(query).result()
     return (
