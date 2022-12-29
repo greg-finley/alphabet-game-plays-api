@@ -64,7 +64,7 @@ def main(request):
     return (
         {"data": [dict(r.items()) for r in results]},
         200,
-        {"Content-Type": "application/json"},
+        {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
     )
 
 
