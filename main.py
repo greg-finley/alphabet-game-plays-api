@@ -50,8 +50,9 @@ def main(request):
      else null end as matching_letters
      from (
                 SELECT * except
-                (payload, deleted, deleted_at, deleted_reviewed, completed_at),
-                unix_seconds(completed_at) completed_at
+                (payload, deleted, deleted_at, deleted_reviewed, completed_at, tweet_id),
+                unix_seconds(completed_at) completed_at,
+                cast(tweet_id as string) tweet_id
                 from
                 (select *,  case when tweet_text like '%is still%' then false else true
                 end as letter_match
