@@ -4,8 +4,11 @@ from google.cloud import bigquery
 
 @functions_framework.http
 def main(request):
-    limit = request.args.get("limit", 50)
-    limit = min(1000, int(limit))
+    limit = int(request.args.get("limit", 50))
+    if limit == 0:
+        limit = ""
+    else:
+        limit = f"limit {min(1000, int(limit))}"
 
     matches_only = request.args.get("matches_only", "false")
     if matches_only not in ["true", "false"]:
@@ -58,7 +61,7 @@ def main(request):
                 end as letter_match
                 FROM mlb_alphabet_game.tweetable_plays)
                 where deleted = false {sport} {before_ts} {matches_only}
-                order by completed_at desc limit {limit}
+                order by completed_at desc {limit}
             )
             """
     results = client.query(query).result()
