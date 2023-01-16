@@ -22,6 +22,20 @@ def main(request):
     else:
         matches_only = ""
 
+    lite = request.args.get("lite", "false")
+    if lite not in ["true", "false"]:
+        return (
+            {"error": "Invalid lite. Must be true or false."},
+            400,
+            {"Content-Type": "application/json"},
+        )
+    if lite == "true":
+        more_except_cols = (
+            ", game_id, letter_match, play_id, score, season_period, tweet_text"
+        )
+    else:
+        more_except_cols = ""
+
     sport = request.args.get("sport")
     if sport and sport not in ["NBA", "MLB", "NFL", "NHL"]:
         return (
@@ -53,7 +67,7 @@ def main(request):
      else null end as matching_letters
      from (
                 SELECT * except
-                (payload, deleted, deleted_at, deleted_reviewed, completed_at, tweet_id),
+                (payload, deleted, deleted_at, deleted_reviewed, completed_at, tweet_id {more_except_cols}),
                 unix_seconds(completed_at) completed_at,
                 cast(tweet_id as string) tweet_id
                 from
