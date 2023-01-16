@@ -30,11 +30,11 @@ def main(request):
             {"Content-Type": "application/json"},
         )
     if lite == "true":
-        more_except_cols = (
-            ", game_id, letter_match, play_id, score, season_period, tweet_text"
-        )
+        more_except_cols = ", game_id, play_id, score, season_period, tweet_text"
+        except_letter_match = " except (letter_match) "
     else:
         more_except_cols = ""
+        except_letter_match = ""
 
     sport = request.args.get("sport")
     if sport and sport not in ["NBA", "MLB", "NFL", "NHL"]:
@@ -62,7 +62,7 @@ def main(request):
 
     client = bigquery.Client()
     query = f"""
-     SELECT *, case when letter_match = true then 
+     SELECT *{except_letter_match}, case when letter_match = true then 
      regexp_extract_all(regexp_extract(tweet_text, 'name[^.]*.'), "[A-Z]")
      else null end as matching_letters
      from (
