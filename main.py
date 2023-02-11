@@ -75,7 +75,7 @@ def main(request):
                 from
                 (select *,  case when tweet_text like '%is still%' then false else true
                 end as letter_match,
-                DATETIME(completed_at, "America/Los_Angeles") as completed_at_pacific
+                cast(datetime(timestamp_trunc(completed_at, second), "America/Los_Angeles") as string) as completed_at_pacific
                 FROM mlb_alphabet_game.tweetable_plays)
                 where deleted = false {sport} {before_ts} {matches_only}
                 order by completed_at desc {limit}
