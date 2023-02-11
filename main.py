@@ -30,7 +30,7 @@ def main(request):
             {"Content-Type": "application/json"},
         )
     if lite == "true":
-        more_except_cols = ", game_id, play_id, score, season_period"
+        more_except_cols = ", game_id, play_id, score, season_period, completed_at_ts"
         top_except = " except (letter_match, tweet_text) "
     else:
         more_except_cols = ""
@@ -72,7 +72,8 @@ def main(request):
                 cast(tweet_id as string) tweet_id
                 from
                 (select *,  case when tweet_text like '%is still%' then false else true
-                end as letter_match
+                end as letter_match,
+                completed_at as completed_at_ts
                 FROM mlb_alphabet_game.tweetable_plays)
                 where deleted = false {sport} {before_ts} {matches_only}
                 order by completed_at desc {limit}
