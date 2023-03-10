@@ -1,9 +1,13 @@
+import os
+
 import functions_framework
-from google.cloud import bigquery
+import MySQLdb
+from dotenv import load_dotenv
 
 
 @functions_framework.http
 def main(request):
+    load_dotenv()
     limit = int(request.args.get("limit", 50))
     if limit == 0:
         limit = ""
@@ -29,14 +33,6 @@ def main(request):
             400,
             {"Content-Type": "application/json"},
         )
-    if lite == "true":
-        more_except_cols = (
-            ", game_id, play_id, score, season_period, completed_at_pacific"
-        )
-        top_except = " except (letter_match, tweet_text) "
-    else:
-        more_except_cols = ""
-        top_except = ""
 
     sport = request.args.get("sport")
     if sport and sport not in ["NBA", "MLB", "NFL", "NHL"]:
@@ -58,35 +54,71 @@ def main(request):
                 400,
                 {"Content-Type": "application/json"},
             )
-        before_ts = f" AND unix_seconds(completed_at) < {before_ts}"
+        before_ts = f" AND unix_timestamp(completed_at) < {before_ts}"
     else:
         before_ts = ""
 
-    client = bigquery.Client()
+    mysql_connection = MySQLdb.connect(
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USERNAME"),
+        passwd=os.getenv("MYSQL_PASSWORD"),
+        db=os.getenv("MYSQL_DATABASE"),
+        ssl_mode="VERIFY_IDENTITY",
+        ssl={
+            "ca": os.environ.get("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
+        },
+    )
+    mysql_connection.autocommit(True)
     query = f"""
-     SELECT *{top_except}, case when letter_match = true then 
-     regexp_extract_all(regexp_extract(tweet_text, 'name[^.]*.'), "[A-Z]")
+     SELECT *, case when letter_match = true then 
+     SUBSTRING_INDEX(SUBSTRING_INDEX(tweet_text, 'name', -1), '.', 1)
      else null end as matching_letters
      from (
-                SELECT * except
-                (completed_at, tweet_id {more_except_cols}),
-                unix_seconds(completed_at) completed_at,
-                cast(tweet_id as string) tweet_id
+                SELECT `game_id`, `play_id`, `sport`, `player_name`, `season_phrase`, `season_period`, `next_letter`, `times_cycled`, `score`, `tweet_text`, `player_id`, `team_id`,
+                unix_timestamp(completed_at) completed_at,
+                cast(tweet_id as char) tweet_id,
+                completed_at_pacific,
+                letter_match
                 from
                 (select *,  case when tweet_text like '%is still%' then false else true
                 end as letter_match,
-                cast(datetime(timestamp_trunc(completed_at, second), "America/Los_Angeles") as string) as completed_at_pacific
-                FROM mlb_alphabet_game.tweetable_plays)
+                cast(CONVERT_TZ(completed_at, 'UTC', 'America/Los_Angeles') as char) as completed_at_pacific
+                FROM tweetable_plays) a
                 where 1 = 1 {sport} {before_ts} {matches_only}
                 order by completed_at desc {limit}
-            )
+            ) b
             """
-    results = client.query(query).result()
+    print(query)
+    mysql_connection.query(query)
+    r = mysql_connection.store_result()
+    rows = []
+    for row in r.fetch_row(maxrows=0, how=1):
+        row["matching_letters"] = (
+            [c for c in row["matching_letters"] if c.isupper()]
+            if row["matching_letters"]
+            else []
+        )
+        if lite == "true":
+            row.pop("game_id")
+            row.pop("play_id")
+            row.pop("score")
+            row.pop("season_period")
+            row.pop("completed_at_pacific")
+
+        rows.append(row)
     return (
-        {"data": [dict(r.items()) for r in results]},
+        {"data": rows},
         200,
         {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
     )
 
 
-# print(main(None))
+class Request:
+    def __init__(self, args):
+        self.args = args
+
+
+# request = Request({"limit": 1, "matches_only": "true", "lite": "true"})
+
+
+# print(main(request))

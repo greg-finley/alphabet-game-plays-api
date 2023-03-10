@@ -6,10 +6,12 @@ authors = ["Greg Finley <gregory.finley@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "3.11.1"
-google-cloud-bigquery = "^3.3.6"
 functions-framework = "^3.2.0"
+mysqlclient = "^2.1.1"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
+types-mysqlclient = "^2.1.5.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
