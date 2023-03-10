@@ -69,7 +69,7 @@ def main(request):
      else null end as matching_letters
      from (
                 SELECT * except
-                (deleted, deleted_at, deleted_reviewed, completed_at, tweet_id {more_except_cols}),
+                (completed_at, tweet_id {more_except_cols}),
                 unix_seconds(completed_at) completed_at,
                 cast(tweet_id as string) tweet_id
                 from
@@ -77,7 +77,7 @@ def main(request):
                 end as letter_match,
                 cast(datetime(timestamp_trunc(completed_at, second), "America/Los_Angeles") as string) as completed_at_pacific
                 FROM mlb_alphabet_game.tweetable_plays)
-                where deleted = false {sport} {before_ts} {matches_only}
+                where 1 = 1 {sport} {before_ts} {matches_only}
                 order by completed_at desc {limit}
             )
             """
