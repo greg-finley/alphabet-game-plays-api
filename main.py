@@ -8,6 +8,27 @@ from dotenv import load_dotenv
 @functions_framework.http
 def main(request):
     load_dotenv()
+
+    game_id = request.args.get("game_id")
+    if game_id:
+        if not game_id.isdigit():
+            return (
+                {"error": "Invalid game_id. Must be an integer."},
+                400,
+                {"Content-Type": "application/json"},
+            )
+        game_id = f" AND game_id = '{game_id}'"
+
+    play_id = request.args.get("play_id")
+    if play_id:
+        if not play_id.isdigit():
+            return (
+                {"error": "Invalid play_id. Must be an integer."},
+                400,
+                {"Content-Type": "application/json"},
+            )
+        play_id = f" AND play_id = '{play_id}'"
+
     limit = int(request.args.get("limit", 50))
     if limit == 0:
         limit = ""
@@ -84,7 +105,7 @@ def main(request):
                 end as letter_match,
                 cast(CONVERT_TZ(completed_at, 'UTC', 'America/Los_Angeles') as char) as completed_at_pacific
                 FROM tweetable_plays) a
-                where 1 = 1 {sport} {before_ts} {matches_only}
+                where 1 = 1 {sport} {before_ts} {matches_only} {game_id} {play_id}
                 order by completed_at desc {limit}
             ) b
             """
