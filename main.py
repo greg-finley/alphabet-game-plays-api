@@ -18,6 +18,8 @@ def main(request):
                 {"Content-Type": "application/json"},
             )
         game_id = f" AND game_id = '{game_id}'"
+    else:
+        game_id = ""
 
     play_id = request.args.get("play_id")
     if play_id:
@@ -28,6 +30,8 @@ def main(request):
                 {"Content-Type": "application/json"},
             )
         play_id = f" AND play_id = '{play_id}'"
+    else:
+        play_id = ""
 
     limit = int(request.args.get("limit", 50))
     if limit == 0:
