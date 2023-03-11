@@ -129,6 +129,8 @@ def main(request):
             row.pop("score")
             row.pop("season_period")
             row.pop("completed_at_pacific")
+            row.pop("letter_match")
+            row.pop("tweet_text")
 
         rows.append(row)
     return (
