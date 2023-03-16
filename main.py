@@ -108,8 +108,11 @@ def main(request):
                 (select *,  case when tweet_text like '%is still%' then false else true
                 end as letter_match,
                 cast(CONVERT_TZ(completed_at, 'UTC', 'America/Los_Angeles') as char) as completed_at_pacific
-                FROM tweetable_plays) a
-                where 1 = 1 {sport} {before_ts} {matches_only} {game_id} {play_id}
+                FROM tweetable_plays
+                where 1=1
+                 {sport} {game_id} {play_id}
+                ) a
+                where 1 = 1 {matches_only} {before_ts} 
                 order by completed_at desc {limit}
             ) b
             """
